@@ -514,7 +514,7 @@ Quelle est la relation entre les couches *Transport* et *Réseau* ?\
 
 #let content_right = [
     #align(center, [
-        *TCP / UDP* segment format
+        *TCP* segment format
         #jump(1)
         $<--$ 32 bits $-->$
     ])
@@ -531,8 +531,190 @@ Quelle est la relation entre les couches *Transport* et *Réseau* ?\
 ]
 
 #my_grid(content_left, content_right, 10, 23)
+#jump(2)
 
-*UDP* socket est identifié par le tuple : (destination IP, n° port destination).\
+*UDP* socket est identifié par le tuple : (*destination IP*, *n° port destination*).\
 Quand l'hôte reçoit *UDP* segment :
 - Il contrôle le n° de port destination dans le segment
 - Il dirige *UDP* segment vers la socket avec le n° de port
+
+#pagebreak()
+== Démultiplexage avec Connexion
+#jump(5)
+*TCP* socket identifiée par le tuple suivant : (*source IP address*, *source  n° port*, *destination IP address*, *ination n° port*). *recv host* utilise ce tuple pour orienter le segment vers la bonne socket.
+- Server host peut supporter plusieurs TCP sockets simultanées.
+- Web serveurs ont différents sockets pour chaque connexion d'un client.
+
+#jump(2)
+== UDP : User Datagram Protocol
+#jump(5)
+
+#let content_left = [
+    #span("UDP") est un protocole "best effort".\
+    Sans connection :
+    - Pas d'accord en avance entre UDP sender, receiver
+    - Chaque UDP segment est manipulé indépendamment des autres
+]
+
+#let content_right = [
+    Avantages d'*UDP* :
+    - Pas de connexion $->$ pas de délai
+    - Simpe $->$ pas d'état de connexion à l'émetteur/récepteur
+    - En-tête court de segment (8 octets)
+    - Pas de contrôle de congestion
+]
+
+#my_grid(content_left,content_right,10,13)
+
+=== Checksum
+#jump(2)
+
+#let content_left = [
+    Le #span("Checksum") permet la détéection d'erreur sur le segment par le récepteur.\
+    #span("Sender") :
+    - *$sum "Mot"$*, tq les mots sont sur 16 bits et on élimine les overflow
+    - On fait le complément à 1 du résultat
+    #span("Rceiver") :
+    - *$forall "Mot de" 16 "bits" : sum "Mot"$*
+    - Si cette somme $= 1111111111111111 ->$ Pas d'erreur\
+        Sinon $->$ Erreur détectée 
+]
+
+#let content_right = [
+    #align(center, [
+        *UDP* segment format
+        #jump(1)
+        $<--$ 32 bits $-->$
+    ])
+    #table(
+        columns: 2,
+        inset: 10pt,
+        align: center,
+        table.header(
+            [*#span("Source Port")*], [*#span("Destination Port")*]
+        ),
+        [length (in bytes of the segment, including header)], [#span("checksum")],
+        Ccell("Application data (message)", 2)
+    )
+]
+
+#my_grid(content_left,content_right,10,26)
+
+== Principes du transfert de données fiables
+#jump(5)
+
+#image("img/img9.png", height: 20%)
+
+#pagebreak()
+== Reliable data transfer : initial
+#jump(5)
+
+- Développement de façon indépendantes les rdt
+de l’émetteur et de récepteur
+- On considère seulement unidirectionnel data transfer (le contrôle de flux est bidirectionnel)
+- Utilise FSM, un automate avec un nombre fini d'états pour spécifier sender/receiver
+
+#let content_left = [
+    == Transfert fiable sur un canal fiable
+    #jump(5)
+
+    - Au dessous un canal parfaitement fiable :
+        - pas d’ erreurs bit
+        - pas de pertes de paquets
+    - Séparation des FSMs de sender et receiver:
+        - sender envoie des data sur le canal de dessous
+        - receiver lit les data de canal de dessous
+]
+
+#let content_right = [
+    == Transfert sur un canal avec des erreurs de bits
+    #jump(5)
+
+    Au dessous un cana qui laisse introduire des erreurs de bits. Comment détecter ces erreurs ?
+    - #span("Acknowledgements")  (#span("ACKs")) : Le destinataire notifie
+    explicitement l’ émetteur que le paquet est reçu
+    - #span("Negative Acknowledgements")  (#span("NACKs")): Le récepteur envoie une
+    notification explicitement à l’émetteur qu’il y a une erreur
+    dans le paquet
+    - Sender retransmet les paquets sur réception d’un NAK
+]
+
+#jump(2)
+#my_grid(content_left,content_right,6,30,fleft:1,fright:1.5)
+
+=== Erreur fatale !
+#jump(3)
+
+Que se passe-t-il si #span("ACK/NAK") erronés ?
+- L'émetteur ne sait pas qu'est ce qui se passe chez le destinataire
+- Ne peut pas simplement retransmettre à cause de la possibilité de duplication
+#jump(1)
+Pour éviter la *duplication* :
+- L'émetteur ajoute sequence number pour chaque paquet
+- L'émetteur retransmet le paquet courant si ACK/ NAK corrompus
+- le destinataire écarte le paquet dupliqué
+#jump(1)
+#span("Stop and wait") : L'émetteur envoie un paquet, puis attend la réponse du récepteur.
+
+#let content_left = [
+    #image("img/img10.png", width:100%)
+]
+
+#let content_right = [
+    #image("img/img11.png", width:100%)
+]
+
+#jump(2)
+#my_grid(content_left,content_right,6,18,fleft:1,fright:1.1)
+
+#pagebreak()
+== TCP segment structure
+#jump(5)
+
+#table(
+    columns: 9,
+    inset: 6pt,
+    align: center,
+    table.header(
+        Ccell([*Source Port*], 8),
+        [*Destination Port*]
+    ),
+    Ccell("Sequence number", 9),
+    Ccell("Acknowledgement number", 9),
+    [Head len], [_Empty_], [Urgent], [#span("ACK")], [PSH : push data now], [RST], [SYN], [FIN], [Receive window (rcvr disposé pour accepter)],
+    Ccell([#span("Checksum")], 8), [Urg data pnter],
+    Ccell("Options (variable length)", 9),
+    Ccell("Application data (variable length)",9),
+)
+
+#jump(2)
+== TCP seq. number et ACKs
+#jump(5)
+
+#span("Numéro de séquence") :
+- Le numéro dans le flux d'octets du premier octet de chaque segment.
+#jump(1)
+#span("ACKs") :
+- Seq. number du prochain octet expédié de l'autre côté
+- En cas de perte d'un segment un cumulative ACK cumulatif est envoyé
+#jump(1)
+#span("Q") : Comment TCP résout le problème de perte de segment hors séquence ?
+- Le choix de le détruire ou de le conserver est libre au programmeur
+
+== TCP : RTT (Round Trip Time) et Timout
+#jump(5)
+
+Fixer le Timeout :
+- $>$ RTT $->$ impossible car le RTT varie
+- Court $->$ prématuré, retransmissions non nécessaire
+- Long $->$ TCP tardera à retransmettre le segments
+#jump(1)
+Comment estimer le RTT ?
+- SampleRTT : temps écoulé entre son envoi et l'#span("ACK") renvoyé par le destinataire. Ignore les segments retransmits. Varie d'un segment à l'autre, une mesure moyenne s'avère nécessaire appelée *EstimatedRTT*
+
+#pagebreak()
+== TCP : Flow control
+#jump(5)
+
+L’objectif est d’équilibrer le rythme d’envoi de l'émetteur à la vitesse de lecture de destinataire. Le processus d'application peut être lent pour lire dans le buffer.
+#image("img/img12.png", width: 50%)
