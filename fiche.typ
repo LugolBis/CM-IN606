@@ -62,7 +62,7 @@
 - Logique: le mode d’échange des messages dans le réseau
 
 - Physique: raccordement des machines $->$ deux types de liaisons: point-à-point ou multipoints
-#align(center, [#image("img1.png", height: 10%)])
+#align(center, [#image("img/img1.png", height: 10%)])
 
 #jump(2)
 == Topologies -- Physique
@@ -73,7 +73,7 @@
 - Anneau
 
 Topologies construites : dérivés des réseaux en étoiles
-#align(center, [#image("img2.png", height: 10%)])
+#align(center, [#image("img/img2.png", height: 10%)])
 
 #pagebreak()
 == Modes de mise en relation
@@ -85,7 +85,7 @@ Deux modes de fonctionnement pour transiter les informations
     - Une seule phase (Transfert des données)
     - Simple
     - Plusieurs chemins possibles
-#align(center, [#image("img3.png", height: 10%)])
+#align(center, [#image("img/img3.png", height: 10%)])
 #jump(2)
 - Mode connnecté (Circuit virtuel,CV/circuit physique)
     - Etablissement d’une connexion
@@ -96,7 +96,7 @@ Deux modes de fonctionnement pour transiter les informations
         - Chemin dédié
         - Circuits commutés (SVC)
         - ou Circuits permanent(PVC)
-#align(center, [#image("img4.png", height: 10%)])
+#align(center, [#image("img/img4.png", height: 10%)])
 #jump(2)
 - Technique de commutation la manière d’interconnecter 2 correspondants
 - Le fonctionnement d’un nœud (routeur/switch)
@@ -140,7 +140,7 @@ Deux modes de fonctionnement pour transiter les informations
     - Une norme est un processus ou un protocole qui a été approuvé par l'industrie des réseaux et ratifié par un organisme de normalisation
 #jump(1)
 - Interactions entre protocoles
-#align(center, [#image("img5.png", height: 15%)])
+#align(center, [#image("img/img5.png", height: 15%)])
 #jump(1)
 - Indépendance du matériel (dispositif)
     - Beaucoup de divers types de dispositifs peuvent communiquer en utilisant les mêmes ensembles de protocoles. C'est parce que les protocoles spécifient les fonctionnalités du réseau, pas la technologie sous-jacente à la charge cette fonctionnalité.
@@ -182,7 +182,7 @@ Deux modes de fonctionnement pour transiter les informations
     [Physique], [#Ccell([#span("TP") *--* #span("STP") *--* #span("FO") *--* #span("Satellite") *--* #span("Micro-ondes")], 6)],
 )
 
-#align(center, [#image("img6.png",height: 40%)])
+#align(center, [#image("img/img6.png",height: 40%)])
 
 #jump(5)
 #let content_left = [#table(
@@ -311,7 +311,7 @@ Deux modes de fonctionnement pour transiter les informations
     - Plusieurs processus peuvent être éxécutés sur la même machine. L'identificateur inclut l'#span("IP") et le numéro de #span("port") associé à l'hôte.
 ]
 
-#my_grid([#image("img7.png",width: 100%)],content_right, 10, 28)
+#my_grid([#image("img/img7.png",width: 100%)],content_right, 10, 28)
 
 #jump(2)
 == Services nécessaires à une application
@@ -371,6 +371,168 @@ Problèmes classiques de débits, scalabilité et de maintenance de la base de d
 - Peut accomplir la translation name/address IP
 
 #jump(2)
-== Electronic Mail
+
+#let content_left = [
+    == Electronic Mail
+    #jump(5)
+    #image("img/img8.png", height: 30%)
+]
+
+#let content_right = [
+    == Web et HTTP
+    #jump(5)
+    - #span("Page web") composée des #span("objets")
+    - #span("Objets") $->$ fichiers HTML, JPEG, applet Java, ...
+    - Web page composée de #span("base HTML-file") qui inclut plusieurs objets référencés
+    - Chaque objet est adressé par un #span("URL")
+    #jump(1)
+    *#span("HTTP")* : hypertext transfer protocole
+    - Protocole de la #span("couche application") Web
+    - Modèle *Client / Serveur*
+        - #span("Client", color: blue) : navigateur qui demande/affiche les *objets* Web
+        - #span("Serveur", color: blue) : serveur qui envoie les *objets* demandés
+]
+
+#my_grid(content_left,content_right,0,35)
+
+== HTTP (Suite)
 #jump(5)
-#image("img8.png", width: 40%)
+
+#let content_left = [
+    Utilise #span("TCP")
+    - Client initiailise *TCP* connection (crée une socket) au serveur, port 80
+    - Serveur accepte le connection
+    - Messages *HTTP* échangés entre le navigateur et le serveur
+    - *TCP*
+]
+
+#let content_right = [
+    #span("HTTP") : protocole sans mémoire
+    - Le *serveur* ne maintient pas l'information concernant les demandes passées du *client*
+]
+
+#my_grid(content_left,content_right,0,0)
+
+#pagebreak()
+#span("Protocoles avec mémoire sans complexes !")
+- Historique (state) doit être maintenu
+- Si le *serveur / client* crashent, on garde une image de l'historique pour rétablir l'état d'avant
+
+== HTTP connections
+#jump(5)
+
+#let content_left = [
+    #span("Non-persistant")
+    - Un seul *objet* Web peut être transféré à la fois sur une connexion TCP
+    - HTTP/1.0 utilise des connexions non persistantes
+    - 2 RTTs / objet $->$ temps de réponse
+    - Le système alloue des ressources pour chaque connexion TCP
+    - Le navigateur ouvre des connections en parallèle
+]
+
+#let content_right = [
+    #span("Persistant HTTP")
+    - Plusieurs *objet* Web peuvent emprunter la même connexion TCP
+    - HTTP/1.1 utilise les connexions persistants par défaut avec pipelinage
+    - Le serveur maintient la connexion ouverte même après l'envoi de la réponse
+    - Les messages successif entre le client/serveur sont envoyés sur la même connexion
+]
+
+#my_grid(content_left,content_right,10,23)
+
+Le #span("Pipelinage") (option par défaut de HTTP/1.1), envoie des requêtes dès qu'il rencontre une référence à un objet $->$ 1 RTT $forall$ les objets référencés *$!=$* #span("Sans Pipelanange") $->$ dépend de l'attente de la réponse à la précédente requête, 1 RTT/objet.\ \
+#span("HTTP/1.0") $->$ GET, POST, HEAD (le serveur doit quitter l'objet après la réponse)\
+#span("HTTP/1.0") $->$ GET, POST, HEAD, PUT (charge un objet vers un chemin spécifié dans l'URL), DELETE (permet d'effacer un objet d'un serveur web)\
+*HTTP* : codes d'état $->$ #span("200-OK", color:green) ; #span("301-Moved Permanently", color:rgb("#eb9641")) ; #span("400-Bad request") ; #span("404-Not found") ; #span("505-HTTP version not supported")
+
+#jump(2)
+== FTP : File Transfer Protocole
+#jump(5)
+
+Transfert de fichiers vers un hôte distant, utilise le modèle *Client / Serveur* $->$ utilise le port 21. Utilise le protocole #span("TCP") pour le transport,
+
+#let content_left = [
+    #span("Simples commandes") :
+    - Format ASCII à 7 bits
+    - User (username)
+    - PASS (password)
+    - LIST (comme ```bash ls```)
+    - RETR filename (obtenir un fichier à partir du répertoire distant)
+    - STOR filename (stocke le fichier dans le répertoire distant)
+]
+
+#let content_right = [
+    #span("Simples codes de retour") :
+    - Code d'état et phrase (comme pour HTTP)
+    - #span("331", color:rgb("#eb9641")) Username Ok, password required
+    - #span("125", color:green) data connection already open; transfer starting
+    - #span("425") Can’t open data connection
+    - #span("452") Error writing file
+]
+
+#jump(2)
+#my_grid(content_left,content_right,10,20, fleft:1.5,fright:1)
+
+#pagebreak()
+== Couche de Transport
+#jump(5)
+
+Fournit une #span("communication logique") sur des processus d’application exploités sur des serveurs différents. Les protocoles de transport s’exécutent aux extrémités :
+- Les messages sont découpés en #span("segments") par l’émetteur
+- Le récepteur: reassembles ces #span("segments") en messages
+Principaux protocoles de transport pour internet : #span("TCP") et #span("UDP").
+#jump(2)
+
+Quelle est la relation entre les couches *Transport* et *Réseau* ?\
+*Couche Réseau* : Communication logique entre les machines.\
+*Couche Transport* : Communication logique entre les processus.
+#jump(2)
+
+#span("TCP") : Délivrance fiable et dans l'ordre
+- Contrôle de congestion
+- Contrôle de flux
+- Initialisation de la connection
+*$!=$* #span("UDP") : Délivrance non fiable et en désordre
+#jump(2)
+
+== Multiplexage / Démultiplexage
+#jump(1)
+
+\ #span("Démultiplexage à rcv host") : Orientation des segments reçus vers la bonne interface "socket".\
+#span("Multiplexage à send host") : Rassemblement des données Création des segments en les associant les en-têtes.
+
+=== Démultiplexage sans connexion
+#jump(2)
+
+#let content_left = [
+    L'hôte reçoit l'#span("IP datagrams") :
+    - Chaque datagram a une source adresse *IP* et une destination adresse *IP*
+    - Chaque datagram contient un segment transport
+    - Chaque segment a des numéros de ports source, destination
+    - La machine utilise l'#span("adresse IP") et le #span("n° de port") pour diriger le *segment* au socket approprié
+]
+
+#let content_right = [
+    #align(center, [
+        *TCP / UDP* segment format
+        #jump(1)
+        $<--$ 32 bits $-->$
+    ])
+    #table(
+        columns: 2,
+        inset: 10pt,
+        align: center,
+        table.header(
+            [*#span("Source Port")*], [*#span("Destination Port")*]
+        ),
+        Ccell("Other header fields", 2),
+        Ccell("Application data (message)", 2)
+    )
+]
+
+#my_grid(content_left, content_right, 10, 23)
+
+*UDP* socket est identifié par le tuple : (destination IP, n° port destination).\
+Quand l'hôte reçoit *UDP* segment :
+- Il contrôle le n° de port destination dans le segment
+- Il dirige *UDP* segment vers la socket avec le n° de port
