@@ -712,9 +712,219 @@ Fixer le Timeout :
 Comment estimer le RTT ?
 - SampleRTT : temps écoulé entre son envoi et l'#span("ACK") renvoyé par le destinataire. Ignore les segments retransmits. Varie d'un segment à l'autre, une mesure moyenne s'avère nécessaire appelée *EstimatedRTT*
 
-#pagebreak()
 == TCP : Flow control
+
+#let content_left = [
+    #jump(5)
+    L’objectif est d’équilibrer le rythme d’envoi de l'émetteur à la vitesse de lecture de destinataire. Le processus d'application peut être lent pour lire dans le buffer.
+]
+
+#let content_right = [
+    #image("img/img12.png", width: 90%)
+]
+
+#my_grid(content_left,content_right,10,10)
+
+#pagebreak()
+== TCP : Gestion de Connection
 #jump(5)
 
-L’objectif est d’équilibrer le rythme d’envoi de l'émetteur à la vitesse de lecture de destinataire. Le processus d'application peut être lent pour lire dans le buffer.
-#image("img/img12.png", width: 50%)
+#let content_left = [
+    L'*Établissement* de la connection :
+    - #span("Étape 1") : Le client envoie un SYN segment au serveur. Il spécifie l'initial seq. number et ne contient pas de données.
+    - #span("Étape 2") : Le serveur reçoit le SYN, répond par un SYNACK segment. Le serveur alloue les buffers et spécifie son initial seq. number.
+    - #span("Étape 3") : Le client reçoit un SYNACK, répond avec ACK segment, qui peut contenir des données.
+]
+
+#let content_right = [
+    *Fermeture* de la connection :
+    - #span("Étape 1") : Le client envoie le segment FIN au serveur.
+    - #span("Étape 2") : Le serveur reçoit le segment FIN, répond avec ACK. Ferme la connection et envoie un segment FIN.
+    - #span("Étape 3") : Le client reçoit FIN répond avec ACK. Il déclenche un "timed wait" $->$ 30s qui lui permet de renvoyer l'ACK en cas de perte.
+    - #span("Étape 4") : Le serveur reçoit un ACK. La connection est fermée.
+]
+
+#my_grid(content_left,content_right,10,27)
+
+#jump(2)
+== Couche Réseau
+#jump(5)
+
+*#span("IP")* est un service simple pour l'envoie de datagrames en mode non connecté.
+L'*IP* est sensible à l'adressage, il s'assure que le routeur sait ce qu'il doit faire, lorsque les données arrivent. C'est un protocole "*Best effort*".\
+Fonctions de *IP* :
+- Acheminement de datagrammes vers un destinataire en mode non connecté.
+- Routage : permet de déterminer le chemin pour les paquets de la couche transport / les trames de la couche laison.
+- Fragmentation/Réasemblage $->$ des micros aux gros systèmes.
+- Gestion des options IP et envoie/réception des messages de contrôle et d'erreur par IMCP.
+
+#jump(2)
+=== Internet Datagram
+#jump(2)
+
+#let content_left = [
+    #image("img/img13.png", width: 100%)
+]
+
+#let content_right = [
+    - Vers (4 bits): (IPv4=4)
+    - Hlen (4 bits): Header length (mot de 32 bits, sans options (cas général) = 20 octets)
+    - Type of Service – TOS (8 bits): n’est pas utilisé,
+    - Total length (16 bits): length de datagramme en octets en-tête inclus
+    - identification, flags, fragmentation
+    - Time to live – TTL (8bits): spécifie la durée de vie de datagramme.
+    - Protocol (8 bits): spécifie le format de la zone de données.
+]
+
+#my_grid(content_left,content_right,10,29)
+
+#pagebreak()
+
+#let content_left = [
+    == IP Fragmentation
+    #jump(5)
+
+    Fragmenter le datagramme permet d'envoyer 1400 bytes à travers un réseau de _Maximum Transfer Unit_ (MTU) de 620 bytes.\
+    *Contrôle de Fragmentation* :
+    - Identification : Permet à la destination de connaître l'origine de chaque fragment.
+    - Fragment Offset (13 bits) : Permet la localisation des données transportées dans le fragment courant par rapport au datagramme initial.
+    - Flags (3 bits): contrôle la fragmentation
+        - Réservé (0 bit)
+        - Don’t Fragment – DF (1er bit) $->$ 1 n’est pas fragmenté
+        - More Fragments – MF (2eme bit): 1 données qui suivent
+    - Environ de 0.1% - 0.5% des paquets TCP sont fragmentés.
+]
+
+#let content_right = [
+    == Internet Adressage
+    #jump(5)
+
+    - Classe A : 0.0.0.0 -- 127.255.255.255
+    - Classe B : 128.0.0.0 -- 191.255.255.255
+    - Classe C : 192.0.0.0 -- 223.255.255.255
+    - Classe D : 224.0.0.0 -- 239.255.255.255 
+    - Classe E : 240.0.0.0 -- 255.255.255.255
+    #jump(1)
+    *Masque de sous réseau* : Exemple : /27 $->$ Il y a (32-27) = 5 fois 0 $->$ 255.255.255.224
+    #jump(1)
+    Adresses Privées : Adresses IP non routables, utilisées par les entreprises en interne.
+    Trois plages :
+    - 10.0.0.0 - 10.255.255.255 a single class A net
+    - 172.16.0.0 - 172.31.255.255 16 contiguous class Bs
+    - 192.168.0.0 – 192.168.255.255 256 contiguous class Cs\
+
+    Connectivité fournit par Network Address Translator (NAT) $->$ Correspondre une adresse privée à une adresse IP publique routable. Seulement pour les paquets *TCP*-*UDP*.
+]
+
+#my_grid(content_left,content_right,10,57)
+
+#jump(2)
+== Classless Internet Domain Routing (CIDR)
+#jump(5)
+
+Beaucoup d'organisation ont plus de 256 machines, sans en avoir des milliers. On attribue donc des adresses de classe C :
+- $<$ 256 adresses $->$ 1 class C
+- $<$ 8192 adresses $->$ 32 class C
+Les blocs d'adresses CIDR sont représentées par un préfixe et préfixe long :
+- *Préfixe* = seule adresse représente le bloc de réseaux
+    - 192.32.136.0 = *11000000 00100000 10001* 000 00000000 $->$ Préfixe de  21 bits
+*Préfiwe long* : indique le nombre de bits de routage, 192.32.136.0/21 $->$ 21 bits utilisés pour le routage. CIDR regroupe tous les réseaux entre 192.32.136.0 et 143.0 en une seule entrée dans le routeur– réduire les entrées dans la table de routeur.
+
+#pagebreak()
+== IPv6
+#jump(5)
+
+#let content_left = [
+    L'*IPv6* permet de résoudre la pénurie d'adresse. De plus l'en-tête est simplifié (ce qui augmente la rapidité de communication), extension de l'en-tête pour les options.\
+    Nouvelles fonctionnalitées : autoconfiguration, support natif du Multipoint (multicast), marquage des flux particuliers, sécurité amélioré et routage à partir de la source.
+]
+
+#let content_right = [
+    #image("img/img14.png", width: 100%)
+]
+
+#my_grid(content_left,content_right,10,22)
+
+#jump(2)
+== Concepts de routage
+#jump(5)
+
+- #span("Routage direct") $->$ La machine destination est directement attachée au même support physique “réseau” comme la machine source. Le datagramme IP est encapsulé dans une trame physique.
+- #span("Routage indirect") $->$ Un seul chemin entre *source* / *destination* via des routeurs. L'adresse du premier routeur (default gateway) est la seule adresse exigée par la source.
+#jump(1)
+Chaque hôte/routeur à une *table de Routage IP* qui garde l'ensemble de chemins avec le routeur next dans la direction de la destination. L'algorithme de routage fonctionne avec et sans masque de sous réseau. 
+
+#jump(2)
+== ARP -- RARP (address resolution protocol)
+#jump(5)
+
+Enjeux :
+- *IP* est une adresse logique *$!=$* adresse physique / *MAC adresse* $->$ identifient les stations au niveau laison
+- Les *LANs* exigent que les stations connaissent les adresses physique.
+#jump(1)
+#span("TCP/IP") utilise #span("ARP") pour trouver l'adresse physique de la destination.
++ *IP* demande une *MAC* address de la *table ARP*
+2. Station recherche dans l’entrée dans la *table ARP*
+3. Si l’adresse est dans la table alors retourne *MAC* address à *IP*
+4. Si l’adresse *MAC* n’est pas dans la table, un paquet *ARP* Request généré sur le réseau en utilisant physical *Broadcast* address (tous à FFFFFF…)
+5. La machine reconnaît son adresse *IP* et répond par un paquet *ARP* Response Packet en indiquant son adresse *MAC*
+6. Sur réception du paquet reply, la station met à jour sa table *ARP*
+
+#pagebreak()
+== ARP -- Format de paquet
+#jump(5)
+
+#let content_left = [
+    #table(
+        columns: 2,
+        inset: 10pt,
+        align: center,
+        table.header(
+            [#Ccell([$<--$ *0* ------ *16* $-->$],2)]
+        ),
+        [#Ccell([HTYPE -- 16 bits],2)],
+        [#Ccell([HTYPE -- 16 bits],2)],
+        [HLEN -- 8 bits], [PLEN -- 8bits],
+        [#Ccell([OPNS -- 16 bits],2)],
+        [#Ccell([Source #span("MAC") -- 48 bits],2)],
+        [#Ccell([Source #span("IP") -- 32 bits],2)],
+        [#Ccell([Destination #span("MAC") -- 48 bits],2)],
+        [#Ccell([Destination #span("IP") -- 32 bits],2)],
+    )
+]
+
+
+#let content_right = [
+    - HTYPE : Le hardware type field.
+    - PTYPE : Le protocol type field.
+    - HLEN. The hardware address length field.
+    - PLEN. The protocol address length field.
+    - OPNS. The operations field specifies whether the packet is an ARP request (a value of 1) or an ARP reply (a value of 2). The field is required since the Ethernet field type will contain the same value for both ARP request and ARP reply.
+    #jump(1)
+    *#span("RARP")* $->$ *TCP/IP* l'utilise pour trouver l'Internet adress à travers le réseau via *RARP serveur*. Chaque réseau doit posséder au moins un #span("RARP") serveur, l'*IP* fait correspondre une IP adresse avec une adresse *Mac*.
+]
+
+#my_grid(content_left,content_right,8,37)
+
+#table(
+    columns: 7,
+    inset: 5pt,
+    align:center,
+    [Peamble], [Destination adresse], [Source adresse], [Field type], [#span("ARP") packet], [Pad], [FCS],
+    [8 bits], [6 bits], [6 bits], [2 bits], [28 bits], [18 bits], [4 bits]
+)
+
+#jump(2)
+== ICMP (internet control message protocol)
+#jump(5)
+
+#span("ICMP") fait un compte rendu sur les conditions d’erreur à la source
+- *ICMP* permet aux routeurs d’envoyer des messages d’erreur ou de supervision à d’autres routeurs ou machines
+- *ICMP* offre un mécanisme de communication entre le logiciel IP d’une machine et celui d’une autre machine
+- Le message *ICMP* est encapsulé dans un datagramme IP et il est considéré comme une partie intégrante du protocole IP
+- Le message d’erreur *ICMP* contient l’en-tête IP et 8 premiers bytes de message
+- Pour éviter la congestion, un message *ICMP* n’est jamais envoyé en réponse à :
+    - Un message d’erreur *ICMP*
+    - Une adresse broadcast ou multicast
+    - Un autre fragment que le premier
+    - Une adresse source qui ne définit pas une seule machine
