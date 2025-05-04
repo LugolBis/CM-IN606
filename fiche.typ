@@ -1078,3 +1078,155 @@ Pour cela plusieurs méthodes :
 - Établissement par la trame des commande *SABM*
 - Acquittement par une réponse #span("UA") (Unumbered Acknowledge)
 - Libération par la trame de commande *DISC* (DISConnect)
+
+#pagebreak()
+
+#let content_left = [
+    *Mode normal* :
+    - Une secondaire ne peut émettre que sur invitation du primaire
+    - Établissement par la trame de commande *SNRM* (Set Normal Response Mode)
+    - Acquittement par une réponse #span("UA")
+    - Libération de la liaison par *DISC*
+    - Acquittement par une réponse #span("UA")
+]
+
+#let content_right = [
+    *Mode asynchrone* :
+    - Une primaire invite une fois la secondaire, ensuite la secondaire peut émettre quand elle désire
+    - Établissement par la trame de commande *SABM* (Set Asynchronus Balanced Mode)
+    - Acquittement par une réponse #span("UA")
+    - Libération de la liaison par *DISC*
+    - Acquittement par une réponse #span("UA")
+]
+
+#my_grid(content_left, content_right,8,20)
+
+#let content_left = [
+    Le temporisateur dans les cas suivant :
+    - Erreur
+    - Rupture de la ligne
+    - Panne de la station distante
+    - Perte d'acquittement
+]
+
+#let content_right = [
+    La reprise se fait à l'aide d'un temporisateur d'attente d'acquittement :
+    - un compteur à rebours initialisé à une certaine valeur
+    - décrémenter à chaque top d'horloge
+    - compteur = 0 ou expiration du temporisateur (timeout), génération d'une interruption
+]
+#jump(2)
+#my_grid(content_left, content_right,8,15,fright:1.6)
+
+#jump(2)
+== Transfert de données
+#jump(5)
+
+- Numérotation cyclique modulo N
+- Détection et correction d'erreurs
+    - Détection : contrôle des bits contenus dans les champs #span("FCS")
+    - Correction : demande de retransmission
+- Contrôle de flux et fenêtre
+    - Émission des trames *I* par anticipation dans la limite d'une fenêtre
+    - Une fenêtre est un crédit *K* alloué à l'émetteur en nombres de trames (en pratique *K*\* temps émission $>$ temps de propagation)
+    - Une fenêtre est un intervalle de numéros de séquence de trame que l'émetteur peut envoyer sans avoir reçu d'acquittement
+    - Une fenêtre est un intervalle à bornes glissantes (sliding window) de largeur *K* borne inférieure = dernier acquittement *N(R)* reçu. Borne supérieure = (dernier acquittement *N(R)* reçu + *K* – 1) mod *N*.
+#jump(1)
+*K* permet de définir le nombre de tampons nécessaires en réception comme en émission. Au niveau liaison, *K* n'est pas négocié mais établi une fois pour toute à l'installation du contrôleur (pour Transpac c'est un paramètre d'abonnement). Les numéros de séquence des trames (_n°_ inclus dans N(S)) sont générés incrémentalement $forall$ nouvelle trame *I*.
+
+#pagebreak()
+== Type de trame de Supervision
+#jump(5)
+
+- Supervision et contrôle de flux :
+    - #span("RR") (Ready to Receive) : Indique que la machine est prête à recevoir une trame *I* et acccuse de la réception des trames *I*.
+    - #span("RNR") (Receiver Not Ready) : Indique qu'on entre dans un état occupé et accuse de la réception des trames *I*.
+- Supervision et reprise sur erreurs : Une trame erronnée est toujours ignorée, la reprise sur erreur se fait lors d'un déséquencement ie  $N(S) > N(R)$ 
+    - #span("REJ") (REJect) : Deamande la retransmission de toutes les trames émises numérotées à partir de $N(R)$ et accuse de la réception des trames de numéro $lt.slant N(R) - 1$
+    - #span("SREJ") (Selective REJect) : Demande de retransmission de la trame numéro $N(R)$ et accuse de la réception des trames de numéro $lt.slant N(R)-1$
+
+#jump(2)
+== P/F (Poll/Final)
+#jump(5)
+
+Le bit P/F se trouve dans le champ de contrôle d'une trame. Il permet les modes suivant :
+- Mode de réponse Normal - primaire/secondaire : Le *primaire* positionne P à 1 sur ses trames lorsqu'il autorise le secondaire à émettre. Le *secondaire* émet alors ses trames et sur sa dernière trame, il positionne F à 1 pour indiquer au primaire qu'il a terminé. Ce mode partage la liaison en mode half-duplex.
+- Mode de réponse asynchrone : Lorsqu'une station reçoit une trame avec P à 1, elle répond avec F à 1 (acquittement de P). Dispose d'un mécanismeservant de reprise sur erreur (REJ).
+
+#jump(2)
+== Slip (Serial Line Internet Protocol)
+#jump(5)
+
+Ajoute un octet en fin de paquet IP et utilise le byte stuffing. Il peut y avoir un octet au début ou fin de paquet IP.\
+Inconvénients : Ne fonctionne qu'avec *IP* ; Pour les adresses fixes connues à l'avances ; Pas de détection ou correction de l'émetteur ; Trop de versions existent il n'y a donc pas de standard de l'Internet.
+
+#jump(2)
+== PPP (Point to Point Protocol)
+#jump(5)
+
+Un format de trame défini permet la détection du début et de la fin de trame. Un protocole de contrôle du lien *LCP* (Link Control Protocol) pour établir, tester et libérer le lien. Un protocole *NCP* (Network Control Protocol) gère l'allocation des adresses *IP*.\
+L'avantage est que *PPP* fonctionne avec plusieurs protocoles réseaux, pour les adresses *IP* pas forcément connus à l'avance et utilise un mécanisme de détection d'erreurs et d'authentification de l'émetteur.
+
+#pagebreak()
+== Couche Physique
+#jump(5)
+
+#let content_left = [
+    Les informations sont transmisent par des signaux électriques sur le support physique. Le support physique est constitué de câbles de fifférents types :
+    - Mécanique
+    - Coaxial
+    - Fibre optique
+    - Satellite
+]
+
+#let content_right = [
+    Le choix du support physique dépend des paramètres suivants :
+    - Débit attendu
+    - Bande passante nécessaire
+    - Coût
+    - Taux d'erreurs toléré
+    - Distance maximale
+    - Backup
+]
+
+#my_grid(content_left,content_right,8,18,fleft:1.5)
+
+#jump(2)
+#table(
+    columns: 4,
+    inset: 6pt,
+    align: center,
+    table.header(
+        [*Nom*], [#span("Paire torsadée")], [#span("Cable coaxial")], [#span("Fibre optique")]
+    ),
+    [*Constitution*], [Paire de fils électriques agencés en spirale], [Deux conducteurs cylindriques de même axe, séparés par un isolant], [Fibre de silicium \ (ou plastique)],
+    [*Transmission*], [Analogique et Numérique], [Analogique et Numérique], [Faisceau optique modulé],
+    [*Usage*], [Informations de courte distance], [Informations de longue distance], [Très large bande passante ($tilde.eq$ 1GHz pour 1Km) et très bonne qualité de transmission],
+    [*Support*], [Téléphonie], [Community antenna television / Ethernet], [],
+    [*Débit*], [1 à 16 Mbit/s], [2 à 100 Mbits/s], [Quelques Gbits/s par Km],
+    [*Portée*], [100 à 250 m], [3 à 4,5 Km], [15 Km $(L:0,85 mu m)$\ 500 Km $(L:1,3 mu m)$],
+)
+
+#let content_left = [
+    Transmission terrestre sans support matériel :
+    - Courte distance :
+        - Ryons infrarouges et rayons laser
+        - Transmission Numérique
+    - Longue distance :
+        - Ondes radios magnétiques
+]
+
+#let content_right = [
+    Les satellites de communication :
+    - Ondes à très haute fréquences
+    - Répéteurs à transposition de fréquences
+    - Satellites géostationnaires
+    - Bandes de fréquences utilisables (4-6 GHz et 12-14 GHz)
+    - Faible taux d'erreurs
+    - Problèmes de cryptographie
+]
+
+#jump(2)
+#my_grid(content_left,content_right,8,18)
+#jump(1)
+*$exists$* des phénomènes pertubateurs comme : *Bruit blanc*, *Bruit impulsif*, *Diaphonie* et *Echo*.
