@@ -19,6 +19,8 @@
 
 #show link: underline
 
+#set list(marker: ([•], [*$->$*]))
+
 #let jump = (x) => [#line(start: (0pt, x*1pt), length: 0%)]
 
 #let span  = (content, color: red) => [#text(fill:color,content)]
@@ -918,13 +920,161 @@ Enjeux :
 == ICMP (internet control message protocol)
 #jump(5)
 
-#span("ICMP") fait un compte rendu sur les conditions d’erreur à la source
-- *ICMP* permet aux routeurs d’envoyer des messages d’erreur ou de supervision à d’autres routeurs ou machines
-- *ICMP* offre un mécanisme de communication entre le logiciel IP d’une machine et celui d’une autre machine
-- Le message *ICMP* est encapsulé dans un datagramme IP et il est considéré comme une partie intégrante du protocole IP
-- Le message d’erreur *ICMP* contient l’en-tête IP et 8 premiers bytes de message
-- Pour éviter la congestion, un message *ICMP* n’est jamais envoyé en réponse à :
-    - Un message d’erreur *ICMP*
-    - Une adresse broadcast ou multicast
-    - Un autre fragment que le premier
-    - Une adresse source qui ne définit pas une seule machine
+#let content_left = [
+    #span("ICMP") fait un compte rendu sur les conditions d’erreur à la source
+    - *ICMP* permet aux routeurs d’envoyer des messages d’erreur ou de supervision à d’autres routeurs ou machines
+    - *ICMP* offre un mécanisme de communication entre le logiciel IP d’une machine et celui d’une autre machine
+    - Le message *ICMP* est encapsulé dans un datagramme IP et il est considéré comme une partie intégrante du protocole IP
+    - Le message d’erreur *ICMP* contient l’en-tête IP et 8 premiers bytes de message
+    - Pour éviter la congestion, un message *ICMP* n’est jamais envoyé en réponse à :
+        - Un message d’erreur *ICMP*
+        - Une adresse broadcast ou multicast
+        - Un autre fragment que le premier
+        - Une adresse source qui ne définit pas une seule machine
+]
+
+
+
+#let content_right = [
+    #image("img/img15.png", width: 100%)
+    #jump(1)
+    #table(
+        columns: 3,
+        inset: 6pt,
+        align: center,
+        [*TYPE* - 8 bits], [*CODE* - 8 bits], [*CHECKSUM* - 16 bits],
+        Ccell("Options/Unused",3),
+        Ccell("Internet Header et 8 octets de données originelle",3)
+    )
+    #jump(1)
+    Les messages d'erreurs indiquent si le problème vient de l'hôte ou du serveur.
+]
+
+#my_grid(content_left,content_right,8,44)
+
+#pagebreak()
+== Couche Liaison
+#jump(5)
+
+Le niveau liaison a pour rôle de fiabiliser la transmission physique des données et ainsi de diminuer le taux d'erreurs. Cela est rendu possible grâce aux structures de données en blocs ou trames : *PDU*.
+#jump(1)
+Un *protocole* est un ensemble de règles régissant les échanges entre plusieurs entités communicantes. Il définit le dormat des données échangées, leur type (information ou contrôle), et le déroulement des échanges (timing).
+
+#let content_left = [
+    === Services de la couche liaison
+    #jump(2)
+
+    - Service sans *connexion* et sans acquittement :
+        - Faible taux d'erreur
+        - La correction de transmission est au niveau supérieure
+    - Service sans connexion et avec acquittement :
+        - Acquittement à chaque réception
+        - Sémantique au moins une fois
+    - Service orienté connexion :
+        - Établissement préalable d'une connexion
+        - Sémantique exactement une fois
+]
+
+#let content_right = [
+    === Contrôle de flux
+    #jump(2)
+
+    Le récepteur reçoit des trames de données dans des buffers dont la taille est limité. Si la vitesse d'arrivée des trames est plus grande que celle du traitement $->$ Saturation et perte de trames.\
+    Pour cela $exists$ deux types de mécanismes :
+    - #span("Trame") particulière du récepteur pour stopper l'émetteur
+    - Fenêtre de contrôle de flux permettant l'autorégulation de l'émetteur
+]
+
+#jump(3)
+#my_grid(content_left, content_right,10,28)
+
+#jump(2)
+== Notion de Trames
+#jump(5)
+
+Les #span("Trames") facilient la communication entre la couche réseau et la couche physique. Elles sont formées en découpant des trains de bits et reposent sur le calcul d'une somme de contrôle d'erreur pour chacune d'entre elle.\
+Pour cela plusieurs méthodes :
+- Compter les caractères :
+    - Utilisation d'un champ dans l'en-tête. Mais en cas d'erreur du compteur $->$ perte de synchronisation
+- Utiliser des caractères de début et de fin de trame et des caractères de transparence :
+    - DLE et STX en début de trame, DLE et ETX en fin de trame.
+- Utiliser les fanions de début et de fin de trame et des bits de transparence :
+    - Fanion : 01111110, ajout de 0 après cinq bits consécutifs à 1
+- Violer le codage utilisé dans la couche physique.
+
+#pagebreak()
+== HDLC (High Data Link Control)
+#jump(3)
+
+#let content_left = [
+    === Caractéristiques :
+    #jump(1)
+    - Procédure synchrone et Orienté bit
+    - Protocole en mode connecté
+    - Gestion d'une connexion logique
+    - Le dialogue se déroule en trois phases
+        + Établissement de la liaison
+        + Transfert de données
+        + Libération de la liaison
+    - Point à point (LAP-B)
+    - Numérotation modulo 8 ou étendue modulo 128
+    - Fenêtre d'anticipation maximale de 8 ou étendue modulo 128
+    - Transparence au drapeau
+]
+
+#let content_right = [
+    === Trame HDLC :
+    #jump(1)
+    - Drapeau (0111 1110) : Toutes les trames doivent commencer et finir par un drapeau.
+    - Adresse : Indique l'adresse du destinataire de la trame.
+    - Contrôle : Permet de définir les différents types de trames et d'indiquer les numéros de séquence et d'Acquittement.
+    - Data : Les données a transmettre.
+    - #span("FCS") (Frame Control Sequence) : 16 bits de contrôle d'erreur calculés par un code polynomial de polynôme générateur : *$x^16 + x^12 + x^5 + 1$*
+    - Transparence au drapeau
+    - Éviter données = Drapeau = 0111 1110
+        - À l'émission, rajouter un bit 0 après 5 bits 1 consécutifs
+        - À la réception, enlever un bit 0 après 5 bits 1 consécutifs
+]
+
+#my_grid(content_left, content_right,8,41,fright:1.6)
+
+#jump(2)
+== Type de trame HDLC
+#jump(5)
+
+*$exists$* 3 types de trames :
+- I (Information) : Trame d'information pour transporter les données
+- S (Supervision) : Trame de supervision pour la reprise sur erreur et le contrôle de flux
+- U (Unumbered) : Trame non numérotée pour l'établissement et la libération de la liaison
+#jump(1)
+
+#let content_left = [
+    #table(
+        columns: 9,
+        inset: 10pt,
+        align: center,
+        table.header(
+            [*Type*], [*1*], [*2*], [*3*], [*4*], [*5*], [*6*], [*7*], [*8*]
+        ),
+        [*I*], [0], Ccell("N(S)",3), [P/F], Ccell("N(R)",3),
+        [*S*], [1], [0], [S], [S], [P/F], Ccell("N(R)",3),
+        [*U*], [1], [0], [M], [M], [P/F], [M], [M], [M],
+    )
+]
+
+#let content_right = [
+    *N(S)* : N° de seq. en émission ; *N(R)* : N° de seq en réception ; *S* : élément de la fonction de supervision\
+    *M* : élément de la fonction de modification\
+    *P/F* : élément d'invitation à émettre / fin
+]
+
+#my_grid(content_left, content_right,8,17,fleft:1.7)
+
+=== Établissement / Libération de la liaison
+#jump(2)
+
+Établissement en mode équilibré ou symétrique :
+- États des stations : primaires
+- Établissement par la trame des commande *SABM*
+- Acquittement par une réponse #span("UA") (Unumbered Acknowledge)
+- Libération par la trame de commande *DISC* (DISConnect)
