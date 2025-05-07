@@ -1230,3 +1230,137 @@ L'avantage est que *PPP* fonctionne avec plusieurs protocoles réseaux, pour les
 #my_grid(content_left,content_right,8,18)
 #jump(1)
 *$exists$* des phénomènes pertubateurs comme : *Bruit blanc*, *Bruit impulsif*, *Diaphonie* et *Echo*.
+Un *filtrage linéaire* est une opération qui transforme un signal d'entrée x(t) en un signal de sortie y(t). Cette transformation est linéaire et homogène dans le temps. On caractérise le filtre par sa réponse à certaines fonctions "types" :
+- $sigma(t) -> R(t)$
+- impulsion de Dirac $->$ $R(t)$
+- $e^(-2i pi f t) -> G(f) times e^(-2i pi f t)$
+On a *$G(f)$* : facteur d'amplification ou d'affaiblissement, gain du filtre ou fonction de transfert.
+
+#jump(2)
+== Bande Passante
+#jump(5)
+
+La #span("bande passante") d'un support de communication correspond à la plage de fréquences où il présente les meilleurs caractéristiqes de transmission. La #span("bande passante") à *n* décibels (dB) est la plage de fréquences dans laquelle le rapport S/B (appelé le rapport signal sur bruit) vérifie : *#span("S/B", color:blue)* $= 10log_(10)(P_S/P_B) lt.slant$ *n* dB, sachant que $P_S$ est la puissance du signal et $P_B$ la puissance du bruit. On définit également la bande passante comme la plage de fréquences telle que $|G(f)|^2$ reste supérieur à une valeur donnée.
+*#span([$|G(f)|^2$], color:blue)* $= P_R/P_E = ("Puissance reçue en f")/("Puissance émise en f")$.
+#jump(1)
+La bande passante à *m* décibels est la plage de fréquences telles que :\ *#span([$m$],color:blue)* $= 10log_(10)(P_E/P_R) = 10log_(10)(1/(|G(f)|^2))$
+
+#jump(2)
+=== Débit
+#jump(3)
+On a les formules suivantes :\
+*#span([$D_("max")$],color:blue)* $ = 2H times log_(2)(V)$ bits/s 
+#box(width:4em)
+*#span([$D$],color:blue)* $ = W times log_(2)(V)$ bits/s.\
+*H* bande passante ; *V* niveauy significatifs ; *W* exprimé en Hertz (Hz) représente la bande passante du support.
+#jump(1)
+#align(center, [Éléments intervenant dans la transmission#image("img/img16.png", height:15%)])
+
+#jump(2)
+== Modulation
+#jump(5)
+
+Lorsque la fonction de modulation existe la transmission est dite #span("analogique"). Dans ce cas, on a une transformationd'une fonction continue en une autre fonction continue. La transmission est dite en bande de base lorsque le signal ne subit pas (peu) de transposition en fréquence. Dans ce cas, le signal présente souvent un aspect rectangulaire car la fonction de modulation simple utilisée est rectan,gulaire. On peut transformer une fonction discrète #span([${d_k}$]) en fonction continue #span([$d(t)$]) à l'aide de la relation suivante : #span([*$d(t)$*], color:blue) $= d_(k) times R_(T)(t-k T - t_(0))/k $ \ $= + NN, k = - NN$,
+sachant que #span([$t_0$]) est l'instant initial, #span([$1/T$]) est la rapidité de modulation et #span([$R_(T)(t)$]) est la fonction de modulation rectangulaire sur l'intervalle $[0;T]$ définit ainsi : #span([$R(t)$],color:blue) $= 1 -> t Î [0;T] space | space 0 -> t Ï [0;T]$. Par abus de langage, on parle de transmission numérique lorsqu'une fonction discrète (suite binaire) est transformée e, fonction continue lors de l'émission et réciproquement lors de la réception.
+
+#jump(2)
+== Modulation d'amplitude
+#jump(5)
+
+#span([*$s(t)$*],color:blue) $= A(t) cos(2p f_(0) t - F_(0))$.
+
+#let content_left = [
+    $A(t) = K + a(t)$ et $a(t) Î {-a,+a} $ ... ou $ a(t) Î [-a,+a]!$
+    #image("img/img17.png", width:95%)
+]
+
+#let content_right = [
+    $f(t) = f_0 + a(t)$ et $a(t) Î {-w,+w} $ ... ou $ a(t) Î [-w,+w]!$
+    #image("img/img18.png", width:100%)
+]
+#jump(1)
+#my_grid(content_left,content_right,8,22,fleft:1.3)
+
+#jump(2)
+== Codage
+#jump(5)
+
+Le *codeur* transforme une suite ${d_k}_(k^(3)0)$ initiale généralement binaire en une suite codée ${a_k}_(k^(3)0)$ (de symboles) généralement binaire ou ternaire. Le *décodeur* fait l'opération inverse.
+Le but du codage est d'adapter la suite de bits à transmettre aux caractéristiques de la transmission. S'il n'y a pas de modulation par transposition en fréquence, le codage est dit en bande de base :
+- La plage de fréquence utilisée par le signal issu de la suite codée est la même que celle de la suite initiale.
+- Dans ce cas, le modulateur module à partir d'une fonction rectangulaire. ${a_k}_(k^(3)0) -> a(t)$
+
+#jump(2)
+== Débit binaire et rapidité de modulation
+#jump(5)
+
+- Le #span("débit binaire") #span([*$D$*],color:blue) d'une voie de données est le nombre maximum de bits $d_i$ transmis par seconde sur cette voie : #span([*$D$*],color:blue) $= 1/T$ bits/s
+- La #span("rapidité de modulation") #span([*$R$*],color:blue) (exprimée en bauds) mesure le nombre maximum de sylmboles (éléments de modulation) transmis/s : #span([*$R$*],color:blue) $= 1/#span([*$D$*],color:blue)$ bauds
+- #span([*$D$*],color:blue) $= 1/T = (log_(2)(N))/Delta = #span([*$R$*],color:blue) log_(2)(N)$ bits/s
+
+#pagebreak()
+=== Avantages d'un Code
+#jump(3)
+
+#let content_left = [
+    - Largeur de sa plage de fréquences : la + *faible* possible
+    - Répartition fréquentielle de la puissance : peu de puisssance aux faibles fréquences, aucune à la fréquence nulle.
+    - Codage de l'horloge : fréquence suffisante de transitions et synchronisation de l'horloge du récepteur sur le signal reçu.
+    - Résistance au bruit : espacement des niveaux
+    - Complexité du codage : coût et vitesse de codage.
+]
+
+#let content_right = [
+    - Dépendance à la polarité : facilité d'installation.
+    - Équilibrage :
+        - Mesure approcximative de l'influence du codage sur des symboles successifs
+        - Running Digital Sequence : $"RDS"({a_k}) = x_(k) a_(k)$
+        - $"DRDS"({a_k}) =$\ $ max("abs"("RDS"({a_j})/({a_j} "sous suite valide de" {a_k})))$
+]
+
+#my_grid(content_left,content_right,8,22)
+
+#jump(2)
+== Codes usuels en bande de base
+#jump(5)
+
+#table(
+    columns: 3,
+    inset: 5pt,
+    align: left,
+    table.header(
+        [*Code à 2 niveaux*], [*Code à 3 niveaux*], [*Code par bloc*]
+    ),
+    [
+        - #span("NRZ")
+        - #span("NRZI")
+        - #span("Biphase")
+        - #span("Biphase différentiel")
+        - #span("Miller")
+    ],
+    [
+        - #span("RZ")
+        - #span("Bipolaire")
+        - #span("Bipolaire entrelacé d'ordre 2")
+        - #span("Bipolaires à haute densité d'ordre") N 
+    ],
+    [
+        - #span("nB")/#span("mB")
+    ]
+)
+
+#jump(2)
+=== Code bipolaire haute densité d'ordre n
+#jump(3)
+
+Même codage que le code bipolaire + une transformation des suites de plus de n fois 0 basée sur la violation de l'alternance: #span("bit de viol") (noté V). Une suite consécutive de $n+1$ bits à 0 est codé par :
++ Une suite de n fois 0 suivis d'un bit de viol : [000...00] #sym.trademark.registered [000...0V]
++ Une suite formée d'un #span("bit de bourrage") (noté B), $n-1$ fois 0, suivis d'un bit de viol? Les bits #span("B") et #span("V") ayant la même polarité : [000...00] #sym.trademark.registered [B00...0V]
+Pour assurer l'équilibrage on choisit la forme *1* si le nombre de bits à 1 suivant le dernier bit de viol est impair, sinon la forme *2*.\
+*Remarques* :
+- Le $1^("er")$ bit à 1 (suivant un bit de viol) est codé avec la valeur inverse du bit de viol.
+- On considère que la suite est conventionnellement précédée d'un bit de viol.
+- Dans une très longue suite de 0 tous les blocs successifs (sauf parfois le $1^("er")$) sont codés sous la forme *2*.
+
+#pagebreak()
+== Couche Physique - Protection contre les erreurs
