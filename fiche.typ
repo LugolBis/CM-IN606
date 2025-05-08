@@ -5,7 +5,7 @@
 #set align(left)
 #set text(
     lang: "en",
-    size: 12pt
+    size: 12pt,
 )
 
 #set par(
@@ -1364,3 +1364,22 @@ Pour assurer l'équilibrage on choisit la forme *1* si le nombre de bits à 1 su
 
 #pagebreak()
 == Couche Physique - Protection contre les erreurs
+#jump(5)
+
+Afin de s'assurer que le *récepteur* a reçu correctement et dans le bon ordre les trames émises, on informe l'émetteur de ce qui se passe en envoyant une trame de contrôle (acquittement). On utilise aussi un delai de garde contre la perte d'une trame, et la numérotation des trames en cas de doublon. On contrôle aussi le flux en regularisant l'émission des trames sur la capacité du récepteur. Enfin la gestion de la liaison établit la connexion, initialise les n° de qéquence, les réinitialise en cas d'erreur.
+=== Erreurs
+Les erreurs sont inévitables a cause des perturbations, il faut donc mettre en oeuvre des techniques et stratégies de protection contre celles-ci.
+- Auto Correction : #span("FEC") (Forward Error Correction)
+- Correction par retransmission : #span("ARQ") (Automatic Reapeat Request)
+=== Détection
+Un émetteur transmet un message à un recepteur en transformant le message à l'aide d'un procédé de calcul spécifique qui génère une cerataine *redondance* des informations dans le message codé. Le récepteur verifie à l'aide du même procédé de calcul que le message reçu est bien le message envoyé grâce aux *redondances*, c'est la technique de *détection par répétition*.
+=== Correction
+Suite à la détection d'une erreur, la redondance est suffisante pour retrouver le message initial, c'est la technique de *correction par répétition*. Le message codé est un triple exemplaire du message initial, le récepteur suppose donc que le message initial correspond aux deux exemplaires qui sont identiques.
+=== Retransmission
+Suite à la détection d'une erreur, le récepteur demande à l'émetteur, implicitement (temporisateur) ou explicitement (#span("NACK")), de transmettre une nouvelle fois le message. La correction par retransmission est préférée dans les réseaux où le taux de perte est faible et le délai de retransmission tolérable, car son surcoût est généralement plus faible que celui induit par les codes auto-correcteurs.
+=== Codes de protection contre les erreurs
+- Les #span("codes en bloc") (linéaire, cyclique ou non) : le codage/décodage d'un bloc dépend uniquement des informations de ce bloc. Préféré dans les applications télé-informatique classiques pour sa simplicité et son faible délai.
+- Les #span("codes en treillis") (convolutifs, récursifs ou non) : le codage/décodage d'un bloc dépend des informations d'autres blocs (généralement précédemment transmis), tq ${"entrée"}^(infinity) -> {"sortie"}^(infinity)$.
+#jump(1)
+Un #span([$"code"(k, n)$]) transforme tout bloc intial de *$k$* bits d'information en un bloc codé de *$n$* bits. Le code introduit une redondance puisque $n gt.eq.slant k$. Le code est #span("symétrique") si les $k$ premiers bits du bloc codé sont égaux aux bits du bloc initial. Alors les $r space (r=n-k)$ derniers bits forment un champ de côntrole d'erreur. Le #span("rendement") d'un $"code"(k, n)$ est\
+$R = k/n$. On appelle #span("mot du code"), la suite de $n$ bits obtenue après un codage $(k, n)$. Le nombre $n$ de bits qui composent un mot du code est appelé la #span("longueur du code"). La #span("dimension") $k$ étant la longueur initiale des mots.
